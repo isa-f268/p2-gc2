@@ -1,0 +1,515 @@
+
+
+openapi: 3.0.0
+info:
+  title: Book Loan Service API
+  description: API untuk layanan peminjaman buku.
+  version: 1.0.0
+
+servers:
+  - url: http://localhost:8080
+    description: Local server
+
+paths:
+  /auth/register:
+    post:
+      tags :
+        - auth  
+      summary: Register User
+      description: Mendaftarkan pengguna baru.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                first_name:
+                  type: string
+                last_name:
+                  type: string
+                address:
+                  type: string
+                email:
+                  type: string
+                password:
+                  type: string
+                birth:
+                  type: string
+                  format: date
+      responses:
+        '201':
+          description: Pengguna berhasil didaftarkan.
+          content:
+            application/json:
+              schema:
+                type: "object"
+                properties:
+                  user_id:
+                    type: "integer"
+                    example: 1
+                  username:
+                    type: "string"
+                    example: "johndoe"
+        '400':
+          $ref: "#/components/responses/BadRequest"
+        '500':
+          $ref: "#/components/responses/InternalServerError"
+  /auth/login:
+    post:
+      tags:
+        - auth
+      summary: Login User
+      description: Login pengguna terdaftar.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                password:
+                  type: string
+      responses:
+        '200':
+          description: Login berhasil.
+          content:
+            application/json:
+              schema:
+                type: "object"
+                properties:
+                  token:
+                    type: "string"
+                    example: "jwt_token"
+        '400':
+          $ref: "#/components/responses/BadRequest"
+        '404':
+          $ref: "#/components/responses/NotFound"
+        '500':
+          $ref: "#/components/responses/InternalServerError"
+
+  /users/detail:
+    get:
+      tags:
+        - user
+      summary: Get User Detail
+      description: Mendapatkan detail pengguna berdasarkan token.
+      parameters:
+        - $ref: "#/components/parameters/Authorization"
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: informasi user berhasil diambil.
+          content:
+            application/json:
+              schema:
+                type: "object"
+                properties:
+                  ID:
+                    type: "integer"
+                    example: 1
+                  CreatedAt: 
+                    type: "string"
+                    example: "2025-06-22T17:01:06.655501+07:00"
+                  UpdatedAt: 
+                    type: "string"
+                    example: "2025-06-22T17:01:06.655501+07:00"
+                  DeletedAt: 
+                    type: "string"
+                    example: "2025-06-24T17:01:06.655501+07:00"
+                  first_name:
+                    type: "string"
+                    example: "John"
+                  last_name:
+                    type: "string"
+                    example: "Doe"
+                  address:
+                    type: "string"
+                    example: "London"
+                  Email:
+                    type: "string"
+                    example: "john@mail.com"
+                  Password:
+                    type: "string"
+                    example: "$2a$10$rECd23hDy1xEQhUpsKf5h"
+                  birth:
+                    type: "string"
+                    example: "1999-05-12"
+                  Loan:
+                    type: "array"
+                    items:
+                      type: "object"
+                      properties:
+                        ID:
+                          type: "integer"
+                          example: 1
+                        CreatedAt: 
+                          type: "string"
+                          example: "2025-06-22T17:01:06.655501+07:00"
+                        UpdatedAt: 
+                          type: "string"
+                          example: "2025-06-22T17:01:06.655501+07:00"
+                        DeletedAt: 
+                          type: "string"
+                          example: null
+                        UserID:
+                          type: "integer"
+                          example: 1
+                        BookID:
+                          type: "integer"
+                          example: 6
+                        Book:
+                          type: "object"
+                          properties:
+                            ID:
+                              type: "integer"
+                              example: 6
+                            CreatedAt: 
+                              type: "string"
+                              example: "2025-06-22T17:01:06.655501+07:00"
+                            UpdatedAt: 
+                              type: "string"
+                              example: "2025-06-22T17:01:06.655501+07:00"
+                            DeletedAt: 
+                              type: "string"
+                              example: "2025-06-24T17:01:06.655501+07:00"
+                            Title:
+                              type: "string"
+                              example: "The Alchemist"
+                            Description:
+                              type: "string"
+                              example: "fiction novel"
+                            MinAge:
+                              type: "integer"
+                              example: 12
+                            CoverUrl:
+                              type: "integer"
+                              example: "http://cover2.jpg"
+                            AuthorID:
+                              type: "integer"
+                              example: 2
+                            GenreID:
+                              type: "integer"
+                              example: 2
+                            Genre:
+                              type: "object"
+                              properties:
+                                ID:
+                                  type: "integer"
+                                  example: 6
+                                CreatedAt: 
+                                  type: "string"
+                                  example: "2025-06-22T17:01:06.655501+07:00"
+                                UpdatedAt: 
+                                  type: "string"
+                                  example: "2025-06-22T17:01:06.655501+07:00"
+                                DeletedAt: 
+                                  type: "string"
+                                  example: null
+                                GenreName:
+                                  type: "string"
+                                  example: "Philosophy"
+        '400':
+          $ref: "#/components/responses/BadRequest"
+        '500':
+          $ref: "#/components/responses/InternalServerError"
+
+  /books:
+    get:
+      tags:
+      - user
+      summary: Get Books
+      description: Mengambil daftar buku berdasarkan genre.
+      parameters:
+        - name: genre
+          in: query
+          description: ID genre buku
+          required: false
+          schema:
+            type: integer
+        - $ref: "#/components/parameters/Authorization"
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Daftar buku berhasil diambil.
+          content:
+            application/json:
+              schema:
+                type: "object"
+                properties:
+                 Book:
+                  type: "object"
+                  properties:
+                    ID:
+                      type: "integer"
+                      example: 6
+                    CreatedAt: 
+                      type: "string"
+                      example: "2025-06-22T17:01:06.655501+07:00"
+                    UpdatedAt: 
+                      type: "string"
+                      example: "2025-06-22T17:01:06.655501+07:00"
+                    DeletedAt: 
+                      type: "string"
+                      example: "2025-06-24T17:01:06.655501+07:00"
+                    Title:
+                      type: "string"
+                      example: "The Alchemist"
+                    Description:
+                      type: "string"
+                      example: "fiction novel"
+                    MinAge:
+                      type: "integer"
+                      example: 12
+                    CoverUrl:
+                      type: "integer"
+                      example: "http://cover2.jpg"
+                    AuthorID:
+                      type: "integer"
+                      example: 2
+                    GenreID:
+                      type: "integer"
+                      example: 2
+        '400':
+          $ref: "#/components/responses/BadRequest"
+        '500':
+          $ref: "#/components/responses/InternalServerError"
+  /books/loan:
+    post:
+      tags:
+      - user
+      summary: Create Loan
+      description: Melakukan peminjaman buku.
+      parameters:
+        - $ref: "#/components/parameters/Authorization"
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                bookID:
+                  type: integer
+                  example: 1
+      responses:
+        '201':
+          description: Peminjaman berhasil dibuat.
+          content:
+            application/json:
+              schema:
+                type: "object"
+                properties:
+                  message:
+                    type: "string"
+                    example: "create loan success"
+                  data:
+                    type: "object"
+                    properties:
+                      ID: 
+                        type: "integer"
+                        example: 1
+                      CreatedAt: 
+                        type: "string"
+                        example: "2025-06-22T17:01:06.655501+07:00"
+                      UpdatedAt: 
+                        type: "string"
+                        example: "2025-06-22T17:01:06.655501+07:00"
+                      DeletedAt: 
+                        type: "string"
+                        example: "2025-06-24T17:01:06.655501+07:00"
+                      Title:
+                        type: "string"
+                        example: "Poppy War"
+                      Description:
+                        type: "string"
+                        example: "historical war fiction novel"
+                      MinAge:
+                        type : "integer"
+                        example: 12
+                      CoverUrl:
+                        type: "string"
+                        example: "http://cover2.jpg"
+                      AuthorID:
+                        type: "integer"
+                        example:
+                      GenreID:
+                        type: "integer"
+                        example: 2
+                      Genre:
+                        type: "object"
+                        properties:
+                          ID: 
+                            type: "integer"
+                            example: 1
+                          CreatedAt: 
+                            type: "string"
+                            example: "2025-06-22T17:01:06.655501+07:00"
+                          UpdatedAt: 
+                            type: "string"
+                            example: "2025-06-22T17:01:06.655501+07:00"
+                          DeletedAt: 
+                            type: "string"
+                            example: "2025-06-24T17:01:06.655501+07:00"
+                          GenreName:
+                            type: "string"
+                            example: "historical"
+        '400':
+          $ref: "#/components/responses/BadRequest"
+        '500':
+          $ref: "#/components/responses/InternalServerError"       
+          
+  /admin/authors:
+    get:
+      tags:
+      - admin
+      summary: Get Authors
+      description: Mengambil daftar author.
+      responses:
+        '200':
+          description: Daftar author berhasil diambil.
+          content:
+            application/json:
+              schema:
+                type: "object"
+                properties:
+                  message:
+                    type: "string"
+                    example: "get author data success"
+                  data:
+                    type: "array"
+                    items:
+                      properties:
+                        Name:
+                          type: "string"
+                          example: "R F Kuang"
+                        Published:
+                          type: "integer"
+                          example: 2
+        '400':
+          $ref: "#/components/responses/BadRequest"
+        '500':
+          $ref: "#/components/responses/InternalServerError"     
+          
+  /admin/genres:
+    get:
+      tags:
+      - admin
+      summary: Get Genres
+      description: Mengambil daftar genre.
+      responses:
+        '200':
+          description: Daftar genre berhasil diambil.
+          content:
+            application/json:
+              schema:
+                type: "object"
+                properties:
+                  message:
+                    type: "string"
+                    example: "get genre success"
+                  data:
+                    type: "array"
+                    items:
+                      properties:
+                        GenreName:
+                          type: "string"
+                          example: "John Doe"
+                        Loaner:
+                          type: "integer"
+                          example: 3
+        '400':
+          $ref: "#/components/responses/BadRequest"
+        '500':
+          $ref: "#/components/responses/InternalServerError"       
+
+  /admin/users:
+    get:
+      tags:
+      - admin
+      summary: Get Users
+      description: Mengambil daftar user.
+      responses:
+        '200':
+          description: Daftar user berhasil diambil.
+          content:
+            application/json:
+              schema:
+                type: "object"
+                properties:
+                  message:
+                    type: "string"
+                    example: "get user success"
+                  data:
+                    type: "array"
+                    items:
+                      properties:
+                        Name:
+                          type: "string"
+                          example: "John Doe"
+                        Loan:
+                          type: "integer"
+                          example: 3
+        '400':
+          $ref: "#/components/responses/BadRequest"
+        '500':
+          $ref: "#/components/responses/InternalServerError"                      
+    
+components:
+  parameters:
+    Authorization:
+      name: Authorization
+      in: header
+      description: JWT token yang didapatkan saat login
+      required: true
+      schema:
+        type: string
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      
+      
+  responses:
+    InternalServerError:
+      description: Internal server error; semua error lain seperti bad request dan not found
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              message:
+                type: string
+                example: internal server error
+
+    BadRequest:
+      description: Bad request error
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              message:
+                type: string
+                example: invalid request parameters
+
+    NotFound:
+      description: Not found error
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              message:
+                type: string
+                example: data not found
+ 
+
+
