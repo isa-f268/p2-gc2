@@ -46,6 +46,6 @@ func main() {
 	e.GET("/admin/genres", adminHandler.GetGenreDetail)
 	e.GET("/admin/users", adminHandler.GetUser)
 
-	log.Println("server running at localhost:8081")
-	log.Fatal(e.Start("localhost:8081"))
+	log.Println("server running at localhost:8080")
+	log.Fatal(e.Start(":8080"))
 }
